@@ -81,26 +81,38 @@ async function createHousehold(){
 }
 
 function show(id,nav=true){
+  if(id!=='add' && window.FoodOSBarcode) FoodOSBarcode.leave();
   document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));
   document.querySelectorAll('nav button[data-nav]').forEach(x=>x.classList.toggle('on',x.dataset.nav===id));
   window.scrollTo(0,0);
 }
 
 async function addFood(){
+  const button=document.getElementById('addFoodButton');
+  if(button.disabled)return;
   const food=document.getElementById('foodName').value.trim();
   const quantity=Number(document.getElementById('foodQty').value);
   const unit=document.getElementById('foodUnit').value;
   const storage=document.getElementById('foodStorage').value;
   const confidence=document.getElementById('foodConfidence').value;
-  if(!food||!(quantity>0))return fail('Enter a food and quantity.');
-  const {data,error}=await sb.rpc('record_inventory_event',{
-    p_household_id:householdId,p_event_type:'MANUAL_ADD',p_food_name:food,
-    p_quantity_delta:quantity,p_unit:unit,p_storage_location:storage,
-    p_confidence:confidence,p_metadata:{source:'manual'}
-  });
-  if(error)return fail(error.message);
-  lastEventId=data;
-  await refreshAll(); show('kitchen'); toast(`${food} added`);
+  if(!food||!Number.isFinite(quantity)||!(quantity>0))return fail('Enter a food name and a positive quantity.');
+  if(!unit||!['Fridge','Freezer','Pantry'].includes(storage))return fail('Choose the unit and storage location.');
+  if(!document.getElementById('foodReviewed').checked)return fail('Review and confirm the product, quantity, unit, and storage location.');
+  let metadata;
+  try{metadata=FoodOSBarcode.metadata();}catch(e){return fail(e.message);}
+  button.disabled=true;
+  try{
+    const {data,error}=await sb.rpc('record_inventory_event',{
+      p_household_id:householdId,p_event_type:'MANUAL_ADD',p_food_name:food,
+      p_quantity_delta:quantity,p_unit:unit,p_storage_location:storage,
+      p_confidence:confidence,p_metadata:metadata
+    });
+    if(error)return fail(error.message);
+    lastEventId=data;
+    FoodOSBarcode.reset();
+    await refreshAll(); show('kitchen'); toast(`${food} added`);
+  }catch(e){fail(e.message);}
+  finally{button.disabled=false;}
 }
 
 async function getInventory(){
