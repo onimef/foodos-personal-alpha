@@ -26,7 +26,7 @@
     .error{background:#fdebea;color:#70201d;border:1px solid #e8b4b0;border-radius:14px;padding:12px;font-size:13px}.ok{background:#e7f2ec;color:#214d3a;border:1px solid #bad0c2;border-radius:14px;padding:12px;font-size:13px}
     .toast{position:fixed;bottom:98px;left:18px;right:18px;max-width:504px;margin:auto;background:#252725;color:#fff;padding:13px;border-radius:14px;display:none;z-index:9}.toast.on{display:flex;justify-content:space-between}.toast button{border:0;background:transparent;color:#bfe4d0;font-weight:800}
     .empty{text-align:center;padding:28px 10px;color:var(--muted)} .hidden{display:none!important}
-    .authbox{margin-top:54px}.confidence{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+    .barcode-video{width:100%;max-height:280px;background:#20221f;border-radius:12px;object-fit:cover}.review{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.4}.review input{width:20px;min-width:20px;height:20px}.btn:disabled{opacity:.55}.authbox{margin-top:54px}.confidence{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
   </style>
 </head>
 <body>
@@ -66,7 +66,7 @@
     </div>
     <div class="card">
       <h3>Add food</h3>
-      <button class="btn secondary full" onclick="show('add')">Add manually</button>
+      <button class="btn secondary full" onclick="show('add')">Scan barcode or add manually</button>
     </div>
     <h2>Prepared</h2><div id="todayPrepared"></div>
   </section>
@@ -81,12 +81,32 @@
   <section id="add" class="screen">
     <div class="muted">Know</div><h1>Add food</h1>
     <div class="card">
-      <label>Food</label><input id="foodName" placeholder="Chicken breast"/>
-      <label>Quantity</label><input id="foodQty" type="number" step=".1" value="1"/>
-      <label>Unit</label><select id="foodUnit"><option>lb</option><option>count</option><option>cups</option><option>servings</option></select>
-      <label>Storage</label><select id="foodStorage"><option>Fridge</option><option>Freezer</option><option>Pantry</option></select>
-      <label>How sure are we?</label><select id="foodConfidence"><option value="VERIFIED">Verified</option><option value="CALCULATED">Calculated</option><option value="ESTIMATED">Estimated</option><option value="UNKNOWN">Unknown</option></select>
-      <button class="btn primary full" style="margin-top:14px" onclick="addFood()">Add to Kitchen</button>
+      <h3>Scan or type a barcode</h3>
+      <p class="muted">Camera images stay on your device. Only the barcode is sent to Open Food Facts for product lookup.</p>
+      <button id="barcodeScan" class="btn secondary full" onclick="FoodOSBarcode.scan()">Scan with camera</button>
+      <div id="barcodeCamera" class="hidden" style="margin-top:12px">
+        <video id="barcodeVideo" class="barcode-video" muted playsinline autoplay aria-label="Barcode camera preview"></video>
+        <button class="btn secondary full" onclick="FoodOSBarcode.stopScan()">Stop camera</button>
+      </div>
+      <label for="foodBarcode">Barcode number (optional)</label>
+      <input id="foodBarcode" type="text" inputmode="numeric" autocomplete="off" maxlength="24" placeholder="UPC or EAN number" oninput="FoodOSBarcode.invalidate()" onkeydown="if(event.key==='Enter'){event.preventDefault();FoodOSBarcode.lookup()}"/>
+      <div class="actions" style="margin-top:12px">
+        <button id="barcodeLookup" class="btn primary" onclick="FoodOSBarcode.lookup()">Look up product</button>
+        <button class="btn secondary" onclick="document.getElementById('foodBarcode').value='';FoodOSBarcode.invalidate()">Clear barcode</button>
+      </div>
+      <p id="barcodeStatus" class="muted" role="status" aria-live="polite">Scan a package or type its barcode. Manual entry also works.</p>
+      <p id="barcodeDetails"></p>
+      <small class="muted">Product data: <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (ODbL). Community records can be incomplete. Check the package before saving.</small>
+    </div>
+    <div class="card">
+      <h3>Review before adding</h3>
+      <label for="foodName">Food name</label><input id="foodName" placeholder="Chicken breast" oninput="document.getElementById('foodReviewed').checked=false"/>
+      <label for="foodQty">Quantity you have</label><input id="foodQty" type="number" step="any" min="0" placeholder="Enter the amount you have" oninput="document.getElementById('foodReviewed').checked=false"/>
+      <label for="foodUnit">Unit</label><select id="foodUnit" onchange="document.getElementById('foodReviewed').checked=false"><option value="">Choose unit</option><option>g</option><option>kg</option><option>oz</option><option>lb</option><option>count</option><option>cups</option><option>servings</option></select>
+      <label for="foodStorage">Storage location</label><select id="foodStorage" onchange="document.getElementById('foodReviewed').checked=false"><option value="">Choose storage location</option><option>Fridge</option><option>Freezer</option><option>Pantry</option></select>
+      <label for="foodConfidence">How sure are we?</label><select id="foodConfidence" onchange="document.getElementById('foodReviewed').checked=false"><option value="VERIFIED">Verified</option><option value="CALCULATED">Calculated</option><option value="ESTIMATED">Estimated</option><option value="UNKNOWN">Unknown</option></select>
+      <label class="review" for="foodReviewed"><input id="foodReviewed" type="checkbox"/>I checked the product or food name, quantity, unit, and storage location.</label>
+      <button id="addFoodButton" class="btn primary full" style="margin-top:14px" onclick="addFood()">Confirm &amp; add to Kitchen</button>
     </div>
   </section>
 
@@ -149,6 +169,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
+<script src="./vendor/zxing-browser-0.1.5.min.js"></script>
+<script src="./src/barcode.js"></script>
 <script src="./src/app.js"></script>
 </body>
 </html>
