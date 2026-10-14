@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>FoodOS Smoke Check</title>
+<style>body{font-family:-apple-system;padding:24px;max-width:700px;margin:auto}li{margin:12px 0}</style>
+<h1>FoodOS Alpha Smoke Check</h1>
+<ol>
+<li>Open <code>index.html</code> over HTTPS.</li>
+<li>Confirm sign-in screen appears.</li>
+<li>Send magic link and return through authorized redirect URL.</li>
+<li>Create household.</li>
+<li>Add Chicken breast, Rice, Broccoli.</li>
+<li>Close/reopen; confirm state persists.</li>
+<li>Get recommendation.</li>
+<li>Start cooking; inventory must not change yet.</li>
+<li>Tap Made It; inventory must decrease.</li>
+<li>Save leftovers; close/reopen; prepared food must persist.</li>
+<li>Eat One; serving count must decrease.</li>
+<li>Correct quantity; verify CORRECTION event.</li>
+<li>Undo; verify REVERSAL event.</li>
+</ol>

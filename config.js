@@ -1,0 +1,4 @@
+window.FOODOS_CONFIG = window.FOODOS_CONFIG || {
+  SUPABASE_URL: "",
+  SUPABASE_PUBLISHABLE_KEY: ""
+};

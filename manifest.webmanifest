@@ -1,0 +1,9 @@
+{
+  "name": "FoodOS Personal Alpha",
+  "short_name": "FoodOS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#245746",
+  "description": "Cloud-backed FoodOS personal alpha"
+}

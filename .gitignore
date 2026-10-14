@@ -1,0 +1,3 @@
+# Local override; GitHub Actions regenerates config.js from repository variables.
+config.js
+.DS_Store
